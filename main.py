@@ -9,24 +9,24 @@ from informe import mostrar_informe, LINEA, pausar
 from mapa import dibujar_mapa, ROJO, NEGRITA, AMARILLO, GRIS, R
 import sonido
 
-DIRECCIONES = {
+MOVIMIENTOS = {
     "n":  ( 0,  1), "s":  ( 0, -1),
-    "e":  ( 1,  0), "o":  (-1,  0),
-    "ne": ( 1,  1), "no": (-1,  1),
-    "se": ( 1, -1), "so": (-1, -1),
+    "e":  ( 1,  0), "w":  (-1,  0),
+    "ne": ( 1,  1), "nw": (-1,  1),
+    "se": ( 1, -1), "sw": (-1, -1),
 }
 
-ALIAS = {
-    "norte": "n", "arriba": "n",
-    "sur":   "s", "abajo":  "s",
-    "este":  "e", "derecha":"e",
-    "oeste": "o", "izquierda":"o",
+ALIAS_MOVIMIENTO = {
+    "north": "n", "up":    "n",
+    "south": "s", "down":  "s",
+    "east":  "e", "right": "e",
+    "west":  "w", "left":  "w",
 }
 
-DIFICULTADES = {
-    "1": {"nombre": "fácil",   "lucidez": 100, "turnos": 20, "prob_evento": 0.20},
-    "2": {"nombre": "normal",  "lucidez":  80, "turnos": 30, "prob_evento": 0.35},
-    "3": {"nombre": "difícil", "lucidez":  60, "turnos": 40, "prob_evento": 0.50},
+NIVELES = {
+    "1": {"nombre": "easy",   "lucidez": 100, "turnos": 20, "prob_evento": 0.20},
+    "2": {"nombre": "normal", "lucidez":  80, "turnos": 30, "prob_evento": 0.35},
+    "3": {"nombre": "hard",   "lucidez":  60, "turnos": 40, "prob_evento": 0.50},
 }
 
 SONIDOS_EVENTO = {
@@ -47,253 +47,249 @@ def pausa(t=0.3):
     time.sleep(t)
 
 
-def pedir_entero(mensaje, minimo, maximo, defecto=None):
+def pedir_entero(pregunta, minimo, maximo, defecto=None):
     while True:
-        entrada = input(mensaje).strip()
+        entrada = input(pregunta).strip()
         if entrada == "" and defecto is not None:
             return defecto
         try:
             valor = int(entrada)
             if minimo <= valor <= maximo:
                 return valor
-            print(f"  Introduce un número entre {minimo} y {maximo}.")
+            print(f"  Enter a number between {minimo} and {maximo}.")
         except ValueError:
-            print("  Valor no válido. Introduce un número entero.")
+            print("  Invalid value.")
 
 
-def pedir_texto(mensaje, defecto="Operador"):
-    entrada = input(mensaje).strip()
+def pedir_nombre(pregunta, defecto="Operator"):
+    entrada = input(pregunta).strip()
     return entrada if entrada else defecto
 
 
-def mostrar_bienvenida():
+def pantalla_inicio():
     print()
     print(LINEA)
     print()
     pausa(0.2)
-    print("  SEÑAL ESTÁTICA")
+    print("  STATIC SIGNAL")
     pausa(0.1)
     frecuencia = round(random.uniform(150.0, 160.0), 1)
-    print(f"  Turno de noche. Frecuencia {frecuencia} MHz.")
+    print(f"  Night shift. Frequency {frecuencia} MHz.")
     pausa(0.1)
-    print("  Tú eres el único que escucha.")
+    print("  You are the only one listening.")
     print()
     pausa(0.3)
     print(LINEA)
     pausa(0.4)
     print()
-    print("  Llevas tres años haciendo el turno de noche.")
-    print("  Sabes distinguir una borrachera de una emergencia real.")
-    print("  Sabes cuándo alguien llora de verdad.")
+    print("  You have been working the night shift for three years.")
+    print("  You know the difference between a drunk and a real emergency.")
+    print("  You know when someone is really crying.")
     print()
-    print("  Esta noche algo es diferente.")
+    print("  Tonight something is different.")
     print()
     pausa(0.5)
     print(LINEA)
     print()
 
 
-def pedir_parametros():
-    print("  CONFIGURACIÓN DEL TURNO")
+def configurar_turno():
+    print("  SHIFT CONFIGURATION")
     print()
-    nombre = pedir_texto("  Nombre del operador (Enter = 'Operador'): ")
+    nombre_operador = pedir_nombre("  Operator name (Enter = 'Operator'): ")
     print()
-    print("  Dificultad:")
-    for k, v in DIFICULTADES.items():
-        print(f"    {k}. {v['nombre']:8} — lucidez {v['lucidez']}, turnos {v['turnos']}")
-    dif_key = input("  Elige (1/2/3, Enter = 2): ").strip()
-    if dif_key not in DIFICULTADES:
-        dif_key = "2"
-    dif = DIFICULTADES[dif_key]
-    print()
-    print(LINEA)
-    print()
-    print(f"  Operador       : {nombre}")
-    print(f"  Posición inicio: X=0, Y=0")
-    print(f"  Lucidez        : {dif['lucidez']}")
-    print(f"  Turnos objetivo: {dif['turnos']}")
-    print(f"  Dificultad     : {dif['nombre']}")
-    print()
-    print(f"  Límites: X=[{LIMITE_MIN},{LIMITE_MAX}]  Y=[{LIMITE_MIN},{LIMITE_MAX}]")
-    print("  Victoria : sobrevivir todos los turnos")
-    print("  Derrota  : lucidez=0 / atrapado / abandonar")
+    print("  Difficulty:")
+    for clave, nivel in NIVELES.items():
+        print(f"    {clave}. {nivel['nombre']:8} — sanity {nivel['lucidez']}, turns {nivel['turnos']}")
+    eleccion = input("  Choose (1/2/3, Enter = 2): ").strip()
+    if eleccion not in NIVELES:
+        eleccion = "2"
+    nivel_elegido = NIVELES[eleccion]
     print()
     print(LINEA)
     print()
-    return nombre, dif
+    print(f"  Operator        : {nombre_operador}")
+    print(f"  Starting position: X=0, Y=0")
+    print(f"  Sanity          : {nivel_elegido['lucidez']}")
+    print(f"  Target turns    : {nivel_elegido['turnos']}")
+    print(f"  Difficulty      : {nivel_elegido['nombre']}")
+    print()
+    print(f"  Operational area: X=[{LIMITE_MIN},{LIMITE_MAX}]  Y=[{LIMITE_MIN},{LIMITE_MAX}]")
+    print("  Victory  : survive all turns")
+    print("  Defeat   : sanity=0 / captured / abandon")
+    print()
+    print(LINEA)
+    print()
+    return nombre_operador, nivel_elegido
 
 
-def mostrar_estado(op, mundo, paso, turnos_total):
-    print(f"\n  — TURNO {paso}/{turnos_total}   {op.hora_actual()} —")
-    dibujar_mapa(op, mundo)
-    print(f"  Estado lucidez   : [{op.estado_lucidez()}]")
-    print(f"  Turnos restantes : {op.turnos_restantes}")
+def mostrar_turno(operador, mundo, numero_turno, turnos_totales):
+    print(f"\n  — TURN {numero_turno}/{turnos_totales}   {operador.hora_actual()} —")
+    dibujar_mapa(operador, mundo)
+    print(f"  Mental state     : [{operador.estado_lucidez()}]")
+    print(f"  Turns remaining  : {operador.turnos_restantes}")
 
 
 def pedir_direccion():
     print()
-    print("  Direcciones: n / s / e / o / ne / no / se / so")
-    print("  ('salir' para abandonar el turno)")
+    print("  Directions: n / s / e / w / ne / nw / se / sw")
+    print("  (type 'quit' to abandon the shift)")
     while True:
         entrada = input("  > ").strip().lower()
-        if entrada == "salir":
+        if entrada == "quit":
             return None
-        entrada = ALIAS.get(entrada, entrada)
-        if entrada in DIRECCIONES:
+        entrada = ALIAS_MOVIMIENTO.get(entrada, entrada)
+        if entrada in MOVIMIENTOS:
             return entrada
-        print("  Dirección no reconocida.")
+        print("  Direction not recognized.")
 
 
-def bucle_simulacion(op, mundo, dif):
-    turnos_total = dif["turnos"]
-    prob_evento  = dif["prob_evento"]
-    params_iniciales = {
-        "x": op.x, "y": op.y,
-        "lucidez": op.lucidez_max,
-        "pasos": op.turnos_restantes,
+def simular_turno(operador, mundo, nivel):
+    turnos_totales = nivel["turnos"]
+    prob_evento = nivel["prob_evento"]
+    config_inicial = {
+        "x": operador.x, "y": operador.y,
+        "lucidez": operador.lucidez_max,
+        "turnos": operador.turnos_restantes,
     }
 
-    paso = 0
+    numero_turno = 0
 
-    while op.esta_vivo():
-        paso += 1
+    while operador.esta_vivo():
+        numero_turno += 1
 
-        if paso > turnos_total:
-            op.resultado = "victoria"
-            op.causa_fin = "Supervivencia completada"
+        if numero_turno > turnos_totales:
+            operador.resultado = "victoria"
+            operador.causa_fin = "Survival completed"
             sonido.sonido_victoria()
             break
 
-        mostrar_estado(op, mundo, paso, turnos_total)
-        op.avanzar_hora(7)
+        mostrar_turno(operador, mundo, numero_turno, turnos_totales)
+        operador.avanzar_hora(7)
 
-        # sector actual
-        sector_actual = mundo.obtener_sector(op.x, op.y)
-        if not sector_actual.visitado:
-            sector_actual.visitado = True
-            op.sectores_visitados.append((op.x, op.y, sector_actual.tipo_visible()))
-            sonido.sonido_sector(sector_actual.tipo)
+        zona_actual = mundo.obtener_sector(operador.x, operador.y)
+        if not zona_actual.visitado:
+            zona_actual.visitado = True
+            operador.sectores_visitados.append((operador.x, operador.y, zona_actual.tipo_visible()))
+            sonido.sonido_sector(zona_actual.tipo)
 
-        tipo_visible = sector_actual.tipo_visible()
-        print(f"  Sector  : {tipo_visible.upper()} — {sector_actual.descripcion()}")
+        tipo_zona = zona_actual.tipo_visible()
+        print(f"  Sector  : {tipo_zona.upper()} — {zona_actual.descripcion()}")
 
-        # textos rotos si lucidez baja
-        if op.textos_rotos():
-            print(texto_roto_sector(tipo_visible))
+        if operador.alucinando():
+            print(texto_roto_sector(tipo_zona))
 
-        mensajes_sector = mundo.aplicar_efecto(sector_actual, op)
-        for msg in mensajes_sector:
-            print(msg)
+        efectos = mundo.aplicar_efecto(zona_actual, operador)
+        for linea in efectos:
+            print(linea)
             pausa(0.04)
 
-        if not op.esta_vivo():
+        if not operador.esta_vivo():
             break
 
-        # monstruo
-        m = mundo.monstruo
-        fase_antes = m.fase
+        señal = mundo.monstruo
+        fase_anterior = señal.fase
 
-        detectado, motivo = m.comprobar_deteccion(op, sector_actual.tipo)
-        if detectado and m.fase == "patrulla":
-            m.iniciar_persecucion()
+        detectado, motivo = señal.comprobar_deteccion(operador, zona_actual.tipo)
+        if detectado and señal.fase == "patrulla":
+            señal.iniciar_persecucion()
             sonido.sonido_deteccion()
-            print(f"\n  {ROJO}{NEGRITA}⚠  SEÑAL DETECTADA — {motivo.upper()}{R}")
-            print(f"  {ROJO}Algo viene hacia ti.{R}")
+            print(f"\n  {ROJO}{NEGRITA}⚠  SIGNAL DETECTED — {motivo.upper()}{R}")
+            print(f"  {ROJO}Something is coming for you.{R}")
             pausa(0.2)
 
-        m.mover(op.x, op.y)
+        señal.mover(operador.x, operador.y)
 
-        if m.fase != fase_antes:
-            if m.fase == "retirada":
-                print(f"\n  {AMARILLO}  La señal pierde tu rastro. Se aleja.{R}")
+        if señal.fase != fase_anterior:
+            if señal.fase == "retirada":
+                print(f"\n  {AMARILLO}  The signal loses your trail. It retreats.{R}")
                 sonido.reanudar_estatico()
-            elif m.fase == "patrulla":
-                print(f"\n  {GRIS}  Silencio. La señal vuelve a vagar.{R}")
+            elif señal.fase == "patrulla":
+                print(f"\n  {GRIS}  Silence. The signal goes back to wandering.{R}")
 
-        if m.colision(op.x, op.y):
+        if señal.colision(operador.x, operador.y):
             sonido.pausar_estatico()
             sonido.sonido_muerte()
             print()
-            print(f"  {ROJO}{NEGRITA}LA SEÑAL TE HA ENCONTRADO.{R}")
+            print(f"  {ROJO}{NEGRITA}THE SIGNAL HAS FOUND YOU.{R}")
             print()
-            op.resultado = "muerte"
-            op.causa_fin = "Capturado por entidad hostil"
+            operador.resultado = "muerte"
+            operador.causa_fin = "Captured by hostile entity"
             break
 
-        # evento aleatorio
-        ev = evento_aleatorio(prob_evento)
-        if ev:
-            fn_sonido = SONIDOS_EVENTO.get(ev["id"])
+        incidente = evento_aleatorio(prob_evento)
+        if incidente:
+            fn_sonido = SONIDOS_EVENTO.get(incidente["id"])
             if fn_sonido:
                 fn_sonido()
-            mensajes_ev = aplicar_evento(ev, op)
-            for msg in mensajes_ev:
-                print(msg)
+            mensajes_incidente = aplicar_evento(incidente, operador)
+            for linea in mensajes_incidente:
+                print(linea)
                 pausa(0.04)
 
-        if not op.esta_vivo():
+        if not operador.esta_vivo():
             break
 
         direccion = pedir_direccion()
         if direccion is None:
-            op.resultado = "tiempo"
-            op.causa_fin = "Operador abandonó el turno"
+            operador.resultado = "tiempo"
+            operador.causa_fin = "Operator abandoned the shift"
             break
 
-        dx, dy = DIRECCIONES[direccion]
-        pos_antes = (op.x, op.y)
-        ok, msg_error = op.mover(dx, dy, mundo)
+        dx, dy = MOVIMIENTOS[direccion]
+        pos_anterior = (operador.x, operador.y)
+        movio, mensaje_error = operador.mover(dx, dy, mundo)
 
-        if not ok:
-            print(f"\n{msg_error}")
-            op.turnos_restantes -= 1
-            op.turnos_superados += 1
+        if not movio:
+            print(f"\n{mensaje_error}")
+            operador.turnos_restantes -= 1
+            operador.turnos_superados += 1
         else:
-            print(f"\n  Movimiento: {direccion.upper()}"
-                  f"  |  ({pos_antes[0]},{pos_antes[1]}) → ({op.x},{op.y})")
+            print(f"\n  Move: {direccion.upper()}"
+                  f"  |  ({pos_anterior[0]},{pos_anterior[1]}) → ({operador.x},{operador.y})")
 
         pausa(0.1)
 
-    if op.resultado is None:
-        if op.lucidez <= 0:
-            op.causa_fin = "Lucidez agotada — colapso del operador"
-            op.resultado = "locura"
+    if operador.resultado is None:
+        if operador.lucidez <= 0:
+            operador.causa_fin = "Sanity depleted — operator collapse"
+            operador.resultado = "locura"
             sonido.pausar_estatico()
             sonido.sonido_muerte()
         else:
-            op.causa_fin = "Tiempo operativo agotado"
-            op.resultado = "tiempo"
+            operador.causa_fin = "Operational time exhausted"
+            operador.resultado = "tiempo"
 
-    mostrar_informe(op, params_iniciales, mundo.monstruo.veces_detectado)
+    mostrar_informe(operador, config_inicial, mundo.monstruo.veces_detectado)
     sonido.pausar_estatico()
 
 
 def jugar():
-    mostrar_bienvenida()
+    pantalla_inicio()
     sonido.iniciar_estatico()
-    nombre, dif = pedir_parametros()
+    nombre_operador, nivel = configurar_turno()
 
-    mundo    = Mundo()
+    mundo = Mundo()
     operador = Operador(
-        nombre=nombre, x=0, y=0,
-        lucidez=dif["lucidez"],
-        pasos_max=dif["turnos"],
+        nombre=nombre_operador, x=0, y=0,
+        lucidez=nivel["lucidez"],
+        turnos_max=nivel["turnos"],
     )
 
-    print("  Iniciando turno...")
+    print("  Starting shift...")
     pausa(0.8)
     print()
-    bucle_simulacion(operador, mundo, dif)
+    simular_turno(operador, mundo, nivel)
 
 
 def main():
     while True:
         jugar()
         print()
-        resp = input("  ¿Iniciar nuevo turno? (s/n): ").strip().lower()
-        if resp not in ("s", "si", "sí", "y", "yes"):
+        respuesta = input("  Start a new shift? (y/n): ").strip().lower()
+        if respuesta not in ("y", "yes", "s", "si", "sí"):
             print()
-            print("  Cerrando sesión.")
+            print("  Closing session.")
             print()
             sys.exit(0)
         print()
