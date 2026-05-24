@@ -1,113 +1,112 @@
-# SEÑAL ESTÁTICA
+# STATIC SIGNAL
 
-> Turno de noche. Frecuencia 156.8 MHz. Tú eres el único que escucha.
+> Night shift. Frequency 156.8 MHz. You are the only one listening.
 
-Eres un operador de radio de emergencias en un turno de noche que empieza a comportarse de forma extraña. Algo se mueve ahí fuera. Sobrevive hasta el amanecer.
-
----
-
-## Requisitos
-
-- Python 3.11 o superior
-- Sin dependencias externas — solo biblioteca estándar de Python
-- Los sonidos funcionan únicamente en **Windows** (winsound). En Mac/Linux el juego funciona igual pero sin audio.
+You are an emergency radio operator on a night shift that starts behaving strangely. Something is moving out there. Survive until dawn.
 
 ---
 
-## Cómo ejecutar
+## Requirements
+
+- Python 3.11 or higher
+- No external dependencies — standard Python library only
+- Sound works on **Windows** only (winsound). On Mac/Linux the game runs normally but without audio.
+
+---
+
+## How to run
 
 ```bash
 python main.py
 ```
 
-Coloca los archivos de sonido `staticshort.wav` y `heartbeatshort.wav` en la misma carpeta que `main.py`.
+Place the sound files `staticshort.wav` and `heartbeatshort.wav` in the same folder as `main.py`.
 
 ---
 
-## Archivos del proyecto
+## Project files
 
 ```
-main.py       — Bucle principal y lógica del juego
-mundo.py      — Mapa, sectores, monstruo y sus efectos
-operador.py   — Clase del personaje jugador
-eventos.py    — Eventos aleatorios
-mapa.py       — Radar visual y brújula en terminal
-informe.py    — Informe final de la expedición
-sonido.py     — Módulo de sonidos (winsound, solo Windows)
-README.md     — Este archivo
+main.py       — Main loop and game logic
+mundo.py      — Map, sectors, monster and their effects
+operador.py   — Player character class
+eventos.py    — Random events
+mapa.py       — Visual radar and compass in terminal
+informe.py    — Final shift report
+sonido.py     — Sound module (winsound, Windows only)
+README.md     — This file
 ```
 
 ---
 
-## Cómo se juega
+## How to play
 
-1. Introduce tu nombre y elige dificultad.
-2. Cada turno muestra el radar, tu posición, lucidez y hora.
-3. Elige dirección para moverte: `n`, `s`, `e`, `o`, `ne`, `no`, `se`, `so`
-4. Sobrevive todos los turnos sin perder la lucidez ni ser atrapado.
+1. Enter your name and choose a difficulty.
+2. Each turn shows the radar, your position, sanity and time.
+3. Choose a direction to move: `n`, `s`, `e`, `w`, `ne`, `nw`, `se`, `sw`
+4. Survive all turns without losing your sanity or getting caught.
 
 ---
 
-## Condiciones de fin
+## End conditions
 
-| Condición | Resultado |
+| Condition | Result |
 |---|---|
-| Sobrevives todos los turnos | Victoria |
-| Lucidez llega a 0 | Derrota — colapso |
-| El monstruo te alcanza | Derrota — capturado |
-| Escribes `salir` | Abandono |
+| Survive all turns | Victory |
+| Sanity reaches 0 | Defeat — collapse |
+| The monster catches you | Defeat — captured |
+| Type `quit` | Abandoned |
 
 ---
 
-## Sectores del mapa
+## Map sectors
 
-| Símbolo | Tipo | Efecto |
+| Symbol | Type | Effect |
 |---|---|---|
-| `[◉]` | Tú | — |
-| `[X]` | Señal (monstruo) | Solo visible en persecución |
-| `[L]` | Llamada | Lucidez −5 a −15 |
-| `[S]` | Silencio | Lucidez −1 a −8 |
-| `[I]` | Interferencia | Lucidez −10 a −20, puede atraer al monstruo |
-| `[R]` | Refugio | Lucidez +8 a +20, dura 3 usos |
-| `[?]` | Anomalía | Lucidez −15 a −25, te teleporta |
-| `[C]` | Café | Lucidez +5 a +12, dura 2 usos |
-| `[D]` | Diario | Lucidez +8 a +15, dura 1 uso |
-| `[~]` | Radio vieja | Lucidez +6 a +14, dura 2 usos |
-| `[F]` | Foto | Lucidez +10 a +18, dura 1 uso |
-| ` · ` | Sin explorar | — |
-| ` ○ ` | Borde del radar | — |
+| `[◉]` | You | — |
+| `[X]` | Signal (monster) | Visible only during pursuit |
+| `[L]` | Call | Sanity −5 to −15 |
+| `[S]` | Silence | Sanity −1 to −8 |
+| `[I]` | Interference | Sanity −10 to −20, may attract the monster |
+| `[R]` | Shelter | Sanity +8 to +20, lasts 3 uses |
+| `[?]` | Anomaly | Sanity −15 to −25, teleports you |
+| `[C]` | Coffee | Sanity +5 to +12, lasts 2 uses |
+| `[D]` | Log | Sanity +8 to +15, lasts 1 use |
+| `[~]` | Old radio | Sanity +6 to +14, lasts 2 uses |
+| `[F]` | Photo | Sanity +10 to +18, lasts 1 use |
+| ` · ` | Unexplored | — |
 
 ---
 
-## La señal — comportamiento del monstruo
+## The signal — monster behavior
 
-El monstruo tiene tres fases:
+The monster has three phases:
 
-- **Patrulla** `[x]` gris — se mueve al azar, no sabe dónde estás. Invisible en el radar.
-- **Persecución** `[X]` rojo — viene directo hacia ti. Visible en el radar. La brújula apunta hacia él.
-- **Retirada** `[~]` amarillo — huye hacia el borde del mapa. No puede matarte. Invisible en el radar.
+- **Patrol** `[x]` grey — moves randomly, does not know where you are. Invisible on the radar.
+- **Pursuit** `[X]` red — comes straight for you. Visible on the radar. The compass points toward it.
+- **Retreat** `[~]` yellow — flees toward the edge of the map. Cannot kill you. Invisible on the radar.
 
-Se activa la persecución si:
-- Te acercas a 4 pasos o menos (distancia Manhattan)
-- Pisas un sector `[L]` llamada (35% de prob.) o `[I]` interferencia (55% de prob.)
+Pursuit is triggered if:
+- You get within 4 steps or less (Manhattan distance)
+- You step on a `[L]` call sector (35% chance) or `[I]` interference sector (55% chance)
 
-La persecución dura entre 4 y 12 turnos aleatorios. Al terminar, el monstruo se retira y reaparece por un borde aleatorio del mapa.
-
----
-
-## Mecánicas especiales
-
-- **Hora del turno** — la hora avanza 7 minutos por turno. Empieza a las 23:00.
-- **Textos rotos** — por debajo del 20% de lucidez los mensajes se vuelven fragmentados y extraños.
-- **Sectores que se agotan** — refugio, café, diario, radio y foto tienen un número limitado de usos. Una vez agotados se convierten en sector vacío.
-- **Brújula** — siempre apunta hacia el monstruo. Solo muestra distancia y coordenadas exactas durante la persecución.
+Pursuit lasts between 4 and 12 random turns. Once it ends, the monster retreats and reappears at a random edge of the map.
 
 ---
 
-## Dificultades
+## Special mechanics
 
-| Nivel | Lucidez | Turnos | Prob. evento |
+- **Shift time** — the clock advances 7 minutes per turn. Starts at 23:00.
+- **Broken text** — below 20% sanity, sector messages become fragmented and strange.
+- **Sectors that deplete** — shelter, coffee, log, radio and photo have a limited number of uses. Once depleted they become empty sectors.
+- **Compass** — always points toward the monster. Only shows distance and exact coordinates during pursuit.
+
+---
+
+## Difficulty
+
+| Level | Sanity | Turns | Event chance |
 |---|---|---|---|
-| Fácil | 100 | 20 | 20% |
+| Easy | 100 | 20 | 20% |
 | Normal | 80 | 30 | 35% |
-| Difícil | 60 | 40 | 50% |
+| Hard | 60 | 40 | 50% |
