@@ -3,81 +3,81 @@ import random
 EVENTOS = [
     {
         "id": "voz_repetida",
-        "titulo": "REPEATED VOICE",
-        "descripcion": "You receive the same call as an hour ago. Same voice. Same words. Same number.",
-        "detalle": "The log says that call never existed.",
+        "titulo": "VOZ REPETIDA",
+        "descripcion": "Recibes la misma llamada que hace una hora. Misma voz. Mismas palabras. Mismo número.",
+        "detalle": "El registro dice que esa llamada nunca existió.",
         "efecto": "lucidez",
         "valor": -10,
     },
     {
         "id": "llamada_propia",
-        "titulo": "YOUR OWN NUMBER",
-        "descripcion": "A call comes in. The number is yours.",
-        "detalle": "You don't pick up. The call lasts 47 seconds. There is breathing on the other end.",
+        "titulo": "NÚMERO PROPIO",
+        "descripcion": "Entra una llamada. El número es el tuyo.",
+        "detalle": "No descuelgas. La llamada dura 47 segundos. Hay respiración al otro lado.",
         "efecto": "lucidez",
         "valor": -15,
     },
     {
         "id": "unidad_perdida",
-        "titulo": "UNIT NOT RESPONDING",
-        "descripcion": "The dispatched unit confirms arrival at the coordinates. Then, silence.",
-        "detalle": "The GPS has it pinned at the same spot for 23 minutes. It is not moving.",
+        "titulo": "UNIDAD SIN RESPUESTA",
+        "descripcion": "La unidad despachada confirma llegada a las coordenadas. Después, silencio.",
+        "detalle": "El GPS la sitúa en el mismo punto desde hace 23 minutos. No se mueve.",
         "efecto": "lucidez",
         "valor": -12,
     },
     {
         "id": "grabacion_propia",
-        "titulo": "ANOMALOUS RECORDING",
-        "descripcion": "The system plays back a recording from two hours ago. Your voice is in the background.",
-        "detalle": "You don't remember saying that. You don't remember that moment.",
+        "titulo": "GRABACIÓN ANÓMALA",
+        "descripcion": "El sistema reproduce una grabación de hace dos horas. Se escucha tu voz al fondo.",
+        "detalle": "No recuerdas haber dicho eso. No recuerdas ese momento.",
         "efecto": "lucidez",
         "valor": -18,
     },
     {
         "id": "lucidez_repentina",
-        "titulo": "MOMENT OF CLARITY",
-        "descripcion": "For a second, everything makes sense. The calls, the coordinates, the pattern.",
-        "detalle": "Then it's gone. But for a moment you saw it all.",
+        "titulo": "MOMENTO DE CLARIDAD",
+        "descripcion": "Por un segundo, todo tiene sentido. Las llamadas, las coordenadas, el patrón.",
+        "detalle": "Luego se va. Pero por un momento lo viste todo.",
         "efecto": "lucidez",
         "valor": +20,
     },
     {
         "id": "cabina",
-        "titulo": "UNIT REPORT",
-        "descripcion": "The unit arrives at coordinates X=-9, Y=-9. It transmits a single message:",
-        "detalle": '"There is a phone booth here. The receiver is off the hook."',
+        "titulo": "INFORME DE UNIDAD",
+        "descripcion": "La unidad llega a las coordenadas X=-9, Y=-9. Transmite un solo mensaje:",
+        "detalle": '"Aquí hay una cabina. El teléfono está descolgado."',
         "efecto": "lucidez",
         "valor": -20,
     },
     {
         "id": "llamada_saliente",
-        "titulo": "UNREGISTERED OUTGOING CALL",
-        "descripcion": "The system detects an outgoing call made 4 minutes ago. You didn't make it.",
-        "detalle": "Or you don't remember.",
+        "titulo": "LLAMADA SALIENTE NO REGISTRADA",
+        "descripcion": "El sistema detecta una llamada saliente hace 4 minutos. No la hiciste tú.",
+        "detalle": "O no lo recuerdas.",
         "efecto": "lucidez",
         "valor": -10,
     },
     {
         "id": "señal_limpia",
-        "titulo": "CLEAN SIGNAL",
-        "descripcion": "For a few minutes, all frequencies are perfectly clean.",
-        "detalle": "Too clean. As if something had stopped breathing.",
+        "titulo": "SEÑAL LIMPIA",
+        "descripcion": "Durante unos minutos, todas las frecuencias están perfectamente limpias.",
+        "detalle": "Demasiado limpias. Como si algo hubiera dejado de respirar.",
         "efecto": "lucidez",
         "valor": +10,
     },
     {
         "id": "coordenadas_imposibles",
-        "titulo": "IMPOSSIBLE COORDINATES",
-        "descripcion": "A call comes in from coordinates outside the operational range.",
-        "detalle": "The system logs them. It shouldn't be able to.",
+        "titulo": "COORDENADAS IMPOSIBLES",
+        "descripcion": "Entra una llamada desde coordenadas que están fuera del rango operativo.",
+        "detalle": "El sistema las registra. No debería poder hacerlo.",
         "efecto": "pasos",
         "valor": -2,
     },
     {
         "id": "mensaje_pared",
-        "titulo": "FRAGMENTED TRANSMISSION",
-        "descripcion": "Through the static, someone says something. You only catch four words:",
-        "detalle": '"I know you are listening"',
+        "titulo": "TRANSMISIÓN FRAGMENTADA",
+        "descripcion": "Entre la estática, alguien dice algo. Solo capturas cuatro palabras:",
+        "detalle": '"ya sé que escuchas"',
         "efecto": "lucidez",
         "valor": -15,
     },
@@ -90,7 +90,7 @@ def evento_aleatorio(probabilidad=0.35):
 
 def aplicar_evento(evento, operador):
     mensajes = []
-    mensajes.append(f"\n  ⚠  EVENT — {evento['titulo']}")
+    mensajes.append(f"\n  ⚠  EVENTO — {evento['titulo']}")
     mensajes.append(f"  {evento['descripcion']}")
     mensajes.append(f"  {evento['detalle']}")
 
@@ -98,10 +98,10 @@ def aplicar_evento(evento, operador):
         operador.lucidez += evento["valor"]
         operador.lucidez = min(operador.lucidez, operador.lucidez_max)
         signo = "+" if evento["valor"] > 0 else ""
-        mensajes.append(f"  >> Sanity {signo}{evento['valor']}.")
+        mensajes.append(f"  >> Lucidez {signo}{evento['valor']}.")
     elif evento["efecto"] == "pasos":
         operador.turnos_restantes += evento["valor"]
-        mensajes.append(f"  >> Turns remaining {evento['valor']}.")
+        mensajes.append(f"  >> Turnos restantes {evento['valor']}.")
 
     operador.eventos_ocurridos.append(evento["titulo"])
     return mensajes

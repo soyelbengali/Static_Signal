@@ -11,22 +11,22 @@ import sonido
 
 MOVIMIENTOS = {
     "n":  ( 0,  1), "s":  ( 0, -1),
-    "e":  ( 1,  0), "w":  (-1,  0),
-    "ne": ( 1,  1), "nw": (-1,  1),
-    "se": ( 1, -1), "sw": (-1, -1),
+    "e":  ( 1,  0), "o":  (-1,  0),
+    "ne": ( 1,  1), "no": (-1,  1),
+    "se": ( 1, -1), "so": (-1, -1),
 }
 
 ALIAS_MOVIMIENTO = {
-    "north": "n", "up":    "n",
-    "south": "s", "down":  "s",
-    "east":  "e", "right": "e",
-    "west":  "w", "left":  "w",
+    "norte": "n", "arriba": "n",
+    "sur":   "s", "abajo":  "s",
+    "este":  "e", "derecha":"e",
+    "oeste": "o", "izquierda":"o",
 }
 
 NIVELES = {
-    "1": {"nombre": "easy",   "lucidez": 100, "turnos": 20, "prob_evento": 0.20},
-    "2": {"nombre": "normal", "lucidez":  80, "turnos": 30, "prob_evento": 0.35},
-    "3": {"nombre": "hard",   "lucidez":  60, "turnos": 40, "prob_evento": 0.50},
+    "1": {"nombre": "fácil",   "lucidez": 100, "turnos": 20, "prob_evento": 0.20},
+    "2": {"nombre": "normal",  "lucidez":  80, "turnos": 30, "prob_evento": 0.35},
+    "3": {"nombre": "difícil", "lucidez":  60, "turnos": 40, "prob_evento": 0.50},
 }
 
 SONIDOS_EVENTO = {
@@ -56,12 +56,12 @@ def pedir_entero(pregunta, minimo, maximo, defecto=None):
             valor = int(entrada)
             if minimo <= valor <= maximo:
                 return valor
-            print(f"  Enter a number between {minimo} and {maximo}.")
+            print(f"  Introduce un número entre {minimo} y {maximo}.")
         except ValueError:
-            print("  Invalid value.")
+            print("  Valor no válido.")
 
 
-def pedir_nombre(pregunta, defecto="Operator"):
+def pedir_nombre(pregunta, defecto="Operador"):
     entrada = input(pregunta).strip()
     return entrada if entrada else defecto
 
@@ -71,22 +71,22 @@ def pantalla_inicio():
     print(LINEA)
     print()
     pausa(0.2)
-    print("  STATIC SIGNAL")
+    print("  SEÑAL ESTÁTICA")
     pausa(0.1)
     frecuencia = round(random.uniform(150.0, 160.0), 1)
-    print(f"  Night shift. Frequency {frecuencia} MHz.")
+    print(f"  Turno de noche. Frecuencia {frecuencia} MHz.")
     pausa(0.1)
-    print("  You are the only one listening.")
+    print("  Tú eres el único que escucha.")
     print()
     pausa(0.3)
     print(LINEA)
     pausa(0.4)
     print()
-    print("  You have been working the night shift for three years.")
-    print("  You know the difference between a drunk and a real emergency.")
-    print("  You know when someone is really crying.")
+    print("  Llevas tres años haciendo el turno de noche.")
+    print("  Sabes distinguir una borrachera de una emergencia real.")
+    print("  Sabes cuándo alguien llora de verdad.")
     print()
-    print("  Tonight something is different.")
+    print("  Esta noche algo es diferente.")
     print()
     pausa(0.5)
     print(LINEA)
@@ -94,29 +94,29 @@ def pantalla_inicio():
 
 
 def configurar_turno():
-    print("  SHIFT CONFIGURATION")
+    print("  CONFIGURACIÓN DEL TURNO")
     print()
-    nombre_operador = pedir_nombre("  Operator name (Enter = 'Operator'): ")
+    nombre_operador = pedir_nombre("  Nombre del operador (Enter = 'Operador'): ")
     print()
-    print("  Difficulty:")
+    print("  Dificultad:")
     for clave, nivel in NIVELES.items():
-        print(f"    {clave}. {nivel['nombre']:8} — sanity {nivel['lucidez']}, turns {nivel['turnos']}")
-    eleccion = input("  Choose (1/2/3, Enter = 2): ").strip()
+        print(f"    {clave}. {nivel['nombre']:8} — lucidez {nivel['lucidez']}, turnos {nivel['turnos']}")
+    eleccion = input("  Elige (1/2/3, Enter = 2): ").strip()
     if eleccion not in NIVELES:
         eleccion = "2"
     nivel_elegido = NIVELES[eleccion]
     print()
     print(LINEA)
     print()
-    print(f"  Operator        : {nombre_operador}")
-    print(f"  Starting position: X=0, Y=0")
-    print(f"  Sanity          : {nivel_elegido['lucidez']}")
-    print(f"  Target turns    : {nivel_elegido['turnos']}")
-    print(f"  Difficulty      : {nivel_elegido['nombre']}")
+    print(f"  Operador        : {nombre_operador}")
+    print(f"  Posición inicio : X=0, Y=0")
+    print(f"  Lucidez         : {nivel_elegido['lucidez']}")
+    print(f"  Turnos objetivo : {nivel_elegido['turnos']}")
+    print(f"  Dificultad      : {nivel_elegido['nombre']}")
     print()
-    print(f"  Operational area: X=[{LIMITE_MIN},{LIMITE_MAX}]  Y=[{LIMITE_MIN},{LIMITE_MAX}]")
-    print("  Victory  : survive all turns")
-    print("  Defeat   : sanity=0 / captured / abandon")
+    print(f"  Área operativa  : X=[{LIMITE_MIN},{LIMITE_MAX}]  Y=[{LIMITE_MIN},{LIMITE_MAX}]")
+    print("  Victoria  : sobrevivir todos los turnos")
+    print("  Derrota   : lucidez=0 / atrapado / abandonar")
     print()
     print(LINEA)
     print()
@@ -124,24 +124,24 @@ def configurar_turno():
 
 
 def mostrar_turno(operador, mundo, numero_turno, turnos_totales):
-    print(f"\n  — TURN {numero_turno}/{turnos_totales}   {operador.hora_actual()} —")
+    print(f"\n  — TURNO {numero_turno}/{turnos_totales}   {operador.hora_actual()} —")
     dibujar_mapa(operador, mundo)
-    print(f"  Mental state     : [{operador.estado_lucidez()}]")
-    print(f"  Turns remaining  : {operador.turnos_restantes}")
+    print(f"  Estado mental    : [{operador.estado_lucidez()}]")
+    print(f"  Turnos restantes : {operador.turnos_restantes}")
 
 
 def pedir_direccion():
     print()
-    print("  Directions: n / s / e / w / ne / nw / se / sw")
-    print("  (type 'quit' to abandon the shift)")
+    print("  Direcciones: n / s / e / o / ne / no / se / so")
+    print("  ('salir' para abandonar el turno)")
     while True:
         entrada = input("  > ").strip().lower()
-        if entrada == "quit":
+        if entrada == "salir":
             return None
         entrada = ALIAS_MOVIMIENTO.get(entrada, entrada)
         if entrada in MOVIMIENTOS:
             return entrada
-        print("  Direction not recognized.")
+        print("  Dirección no reconocida.")
 
 
 def simular_turno(operador, mundo, nivel):
@@ -160,7 +160,7 @@ def simular_turno(operador, mundo, nivel):
 
         if numero_turno > turnos_totales:
             operador.resultado = "victoria"
-            operador.causa_fin = "Survival completed"
+            operador.causa_fin = "Supervivencia completada"
             sonido.sonido_victoria()
             break
 
@@ -194,27 +194,27 @@ def simular_turno(operador, mundo, nivel):
         if detectado and señal.fase == "patrulla":
             señal.iniciar_persecucion()
             sonido.sonido_deteccion()
-            print(f"\n  {ROJO}{NEGRITA}⚠  SIGNAL DETECTED — {motivo.upper()}{R}")
-            print(f"  {ROJO}Something is coming for you.{R}")
+            print(f"\n  {ROJO}{NEGRITA}⚠  SEÑAL DETECTADA — {motivo.upper()}{R}")
+            print(f"  {ROJO}Algo viene hacia ti.{R}")
             pausa(0.2)
 
         señal.mover(operador.x, operador.y)
 
         if señal.fase != fase_anterior:
             if señal.fase == "retirada":
-                print(f"\n  {AMARILLO}  The signal loses your trail. It retreats.{R}")
+                print(f"\n  {AMARILLO}  La señal pierde tu rastro. Se aleja.{R}")
                 sonido.reanudar_estatico()
             elif señal.fase == "patrulla":
-                print(f"\n  {GRIS}  Silence. The signal goes back to wandering.{R}")
+                print(f"\n  {GRIS}  Silencio. La señal vuelve a vagar.{R}")
 
         if señal.colision(operador.x, operador.y):
             sonido.pausar_estatico()
             sonido.sonido_muerte()
             print()
-            print(f"  {ROJO}{NEGRITA}THE SIGNAL HAS FOUND YOU.{R}")
+            print(f"  {ROJO}{NEGRITA}LA SEÑAL TE HA ENCONTRADO.{R}")
             print()
             operador.resultado = "muerte"
-            operador.causa_fin = "Captured by hostile entity"
+            operador.causa_fin = "Capturado por entidad hostil"
             break
 
         incidente = evento_aleatorio(prob_evento)
@@ -233,7 +233,7 @@ def simular_turno(operador, mundo, nivel):
         direccion = pedir_direccion()
         if direccion is None:
             operador.resultado = "tiempo"
-            operador.causa_fin = "Operator abandoned the shift"
+            operador.causa_fin = "Operador abandonó el turno"
             break
 
         dx, dy = MOVIMIENTOS[direccion]
@@ -245,19 +245,19 @@ def simular_turno(operador, mundo, nivel):
             operador.turnos_restantes -= 1
             operador.turnos_superados += 1
         else:
-            print(f"\n  Move: {direccion.upper()}"
+            print(f"\n  Movimiento: {direccion.upper()}"
                   f"  |  ({pos_anterior[0]},{pos_anterior[1]}) → ({operador.x},{operador.y})")
 
         pausa(0.1)
 
     if operador.resultado is None:
         if operador.lucidez <= 0:
-            operador.causa_fin = "Sanity depleted — operator collapse"
+            operador.causa_fin = "Lucidez agotada — colapso del operador"
             operador.resultado = "locura"
             sonido.pausar_estatico()
             sonido.sonido_muerte()
         else:
-            operador.causa_fin = "Operational time exhausted"
+            operador.causa_fin = "Tiempo operativo agotado"
             operador.resultado = "tiempo"
 
     mostrar_informe(operador, config_inicial, mundo.monstruo.veces_detectado)
@@ -276,7 +276,7 @@ def jugar():
         turnos_max=nivel["turnos"],
     )
 
-    print("  Starting shift...")
+    print("  Iniciando turno...")
     pausa(0.8)
     print()
     simular_turno(operador, mundo, nivel)
@@ -286,10 +286,10 @@ def main():
     while True:
         jugar()
         print()
-        respuesta = input("  Start a new shift? (y/n): ").strip().lower()
-        if respuesta not in ("y", "yes", "s", "si", "sí"):
+        respuesta = input("  ¿Iniciar nuevo turno? (s/n): ").strip().lower()
+        if respuesta not in ("s", "si", "sí", "y", "yes"):
             print()
-            print("  Closing session.")
+            print("  Cerrando sesión.")
             print()
             sys.exit(0)
         print()
