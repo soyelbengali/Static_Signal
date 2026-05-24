@@ -9,16 +9,16 @@ PERSECUCION_MIN = 4
 PERSECUCION_MAX = 12
 
 TIPOS_SECTOR = {
-    "vacio":         {"descripcion": "No activity recorded in this sector.",              "efecto": None},
-    "llamada":       {"descripcion": "Active call signal.",                               "efecto": "llamada"},
-    "silencio":      {"descripcion": "Zone of total silence. No signal.",                 "efecto": "silencio"},
-    "interferencia": {"descripcion": "Severe interference. Data is corrupted.",           "efecto": "interferencia"},
-    "refugio":       {"descripcion": "Repeater station. Stable signal.",                  "efecto": "refugio"},
-    "anomalia":      {"descripcion": "Coordinate that appears on no official map.",       "efecto": "anomalia"},
-    "cafe":          {"descripcion": "Coffee machine. Still working.",                    "efecto": "cafe"},
-    "diario":        {"descripcion": "Someone left a shift log here.",                    "efecto": "diario"},
-    "radio_vieja":   {"descripcion": "An old radio playing static music.",                "efecto": "radio_vieja"},
-    "foto":          {"descripcion": "A family photo. You don't remember who they are.",  "efecto": "foto"},
+    "vacio":         {"descripcion": "Sector sin actividad registrada.",                  "efecto": None},
+    "llamada":       {"descripcion": "Señal de llamada activa.",                          "efecto": "llamada"},
+    "silencio":      {"descripcion": "Zona de silencio total. Sin señal.",                "efecto": "silencio"},
+    "interferencia": {"descripcion": "Interferencia severa. Los datos se corrompen.",     "efecto": "interferencia"},
+    "refugio":       {"descripcion": "Estación repetidora. Señal estable.",               "efecto": "refugio"},
+    "anomalia":      {"descripcion": "Coordenada que no aparece en ningún mapa oficial.", "efecto": "anomalia"},
+    "cafe":          {"descripcion": "Máquina de café. Todavía funciona.",                "efecto": "cafe"},
+    "diario":        {"descripcion": "Alguien dejó un diario de turno aquí.",             "efecto": "diario"},
+    "radio_vieja":   {"descripcion": "Una radio antigua emite música estática.",          "efecto": "radio_vieja"},
+    "foto":          {"descripcion": "Una foto familiar. No recuerdas quién es.",         "efecto": "foto"},
 }
 
 PROBABILIDAD_SECTOR = [
@@ -44,45 +44,45 @@ DURACION_SECTOR = {
 
 TEXTOS_ROTOS = {
     "vacio": [
-        "  >> the sector is e m p t y",
-        "  >> nothing. nothing. nothing. nothing.",
-        "  >> no activity. that's what the system says.",
+        "  >> el sector está v a c í o",
+        "  >> nada. nada. nada. nada.",
+        "  >> sin actividad. o eso dice el sistema.",
     ],
     "llamada": [
-        "  >> the voice says your name",
-        "  >> you can't hang up. you know you can't hang up.",
-        "  >> the call has been open for too long",
+        "  >> la voz dice tu nombre",
+        "  >> no puedes colgar. sabes que no puedes colgar.",
+        "  >> la llamada lleva abierta demasiado tiempo",
     ],
     "silencio": [
-        "  >> too much silence. something is absorbing it.",
-        "  >> no signal. nothing. you are alone.",
-        "  >> the silence has a shape",
+        "  >> demasiado silencio. algo lo está absorbiendo.",
+        "  >> no hay señal. no hay nada. estás solo.",
+        "  >> el silencio tiene forma",
     ],
     "interferencia": [
-        "  >> the data says this is not happening",
+        "  >> los datos dicen que esto no está pasando",
         "  >> ERROR ERROR ERROR",
-        "  >> someone is recording this",
+        "  >> alguien está grabando esto",
     ],
     "refugio": [
-        "  >> the signal is clean. you are not.",
-        "  >> it works. for now.",
-        "  >> you breathe. or something that resembles breathing.",
+        "  >> la señal está limpia. tú no.",
+        "  >> funciona. por ahora.",
+        "  >> respiras. o algo que se parece a respirar.",
     ],
     "cafe": [
-        "  >> the coffee tastes like something that isn't coffee",
-        "  >> you drink it anyway",
+        "  >> el café sabe a algo que no es café",
+        "  >> lo bebes de todas formas",
     ],
     "diario": [
-        "  >> the handwriting is yours. you don't remember writing it.",
-        "  >> the last page is blank. or almost.",
+        "  >> la letra es tuya. no recuerdas haberlo escrito.",
+        "  >> la última página está en blanco. o casi.",
     ],
     "radio_vieja": [
-        "  >> the song ends. it starts again from the beginning.",
-        "  >> someone is singing on a frequency that shouldn't exist.",
+        "  >> la canción termina. vuelve a empezar desde el principio.",
+        "  >> alguien canta en una frecuencia que no debería existir.",
     ],
     "foto": [
-        "  >> the person in the photo is looking at you.",
-        "  >> there is someone behind them. you hadn't noticed before.",
+        "  >> la persona de la foto te mira a ti.",
+        "  >> hay alguien detrás. no lo habías visto antes.",
     ],
 }
 
@@ -139,11 +139,11 @@ class Monstruo:
         if self.fase == "retirada":
             return False, ""
         if dist <= DISTANCIA_DETECCION:
-            return True, f"critical distance ({dist} steps)"
+            return True, f"distancia crítica ({dist} pasos)"
         if sector_tipo in SECTORES_RUIDOSOS:
             prob = 0.55 if sector_tipo == "interferencia" else 0.35
             if random.random() < prob:
-                return True, f"sector noise [{sector_tipo.upper()}]"
+                return True, f"ruido del sector [{sector_tipo.upper()}]"
         return False, ""
 
     def iniciar_persecucion(self):
@@ -233,34 +233,34 @@ class Mundo:
             sector.usos += 1
             usos_restantes = DURACION_SECTOR[sector.tipo] - sector.usos
             if usos_restantes == 0:
-                mensajes.append("  >> This sector is depleted. It won't work again.")
+                mensajes.append("  >> Este sector se ha agotado. Ya no volverá a funcionar.")
             elif usos_restantes == 1:
-                mensajes.append("  >> Only one use left in this sector.")
+                mensajes.append("  >> Queda solo un uso más en este sector.")
 
         if efecto == "llamada":
             perdida = random.randint(5, 15)
             operador.lucidez -= perdida
-            mensajes.append("  >> Incoming call. Unrecognizable voice.")
-            mensajes.append(f"  >> Sanity -{perdida}.")
+            mensajes.append("  >> Llamada entrante. Voz irreconocible.")
+            mensajes.append(f"  >> Lucidez -{perdida}.")
 
         elif efecto == "silencio":
             perdida = random.randint(1, 8)
             operador.lucidez -= perdida
-            mensajes.append("  >> Total silence. No static. Nothing.")
-            mensajes.append(f"  >> Sanity -{perdida}.")
+            mensajes.append("  >> Silencio absoluto. Ni estática. Ni nada.")
+            mensajes.append(f"  >> Lucidez -{perdida}.")
 
         elif efecto == "interferencia":
             perdida = random.randint(10, 20)
             operador.lucidez -= perdida
-            mensajes.append("  >> SEVERE INTERFERENCE. Records corrupted.")
-            mensajes.append(f"  >> Sanity -{perdida}.")
+            mensajes.append("  >> INTERFERENCIA SEVERA. Registros corruptos.")
+            mensajes.append(f"  >> Lucidez -{perdida}.")
 
         elif efecto == "refugio":
             ganancia = random.randint(8, 20)
             operador.lucidez += ganancia
             operador.lucidez = min(operador.lucidez, operador.lucidez_max)
-            mensajes.append("  >> Repeater station active. Clean signal.")
-            mensajes.append(f"  >> Sanity +{ganancia}.")
+            mensajes.append("  >> Estación repetidora activa. Señal limpia.")
+            mensajes.append(f"  >> Lucidez +{ganancia}.")
 
         elif efecto == "anomalia":
             perdida = random.randint(15, 25)
@@ -269,53 +269,53 @@ class Mundo:
             ny = random.randint(LIMITE_MIN, LIMITE_MAX)
             operador.x = nx
             operador.y = ny
-            mensajes.append("  >> ANOMALOUS COORDINATE.")
-            mensajes.append(f"  >> The signal pulls you. Relocated to X={nx}, Y={ny}.")
-            mensajes.append(f"  >> Sanity -{perdida}.")
+            mensajes.append("  >> COORDENADA ANÓMALA.")
+            mensajes.append(f"  >> Reubicado en X={nx}, Y={ny}.")
+            mensajes.append(f"  >> Lucidez -{perdida}.")
 
         elif efecto == "cafe":
             ganancia = random.randint(5, 12)
             operador.lucidez += ganancia
             operador.lucidez = min(operador.lucidez, operador.lucidez_max)
-            mensajes.append("  >> Cold coffee. But coffee.")
-            mensajes.append(f"  >> Sanity +{ganancia}. You clear your head a little.")
+            mensajes.append("  >> Café frío. Pero café.")
+            mensajes.append(f"  >> Lucidez +{ganancia}. Te despejas un poco.")
 
         elif efecto == "diario":
             ganancia = random.randint(8, 15)
             operador.lucidez += ganancia
             operador.lucidez = min(operador.lucidez, operador.lucidez_max)
             frases = [
-                "Someone wrote: 'if you read this, they already know you are here'.",
-                "Last entry: '03:41 — do not answer line 4'.",
-                "Tight handwriting: 'the negative coordinates are not real. repeat: not real'.",
-                "Smudged ink: 'I found the pattern. It doesn't help'.",
+                "Alguien escribió: 'si lees esto, ya saben que estás aquí'.",
+                "La última entrada dice: '03:41 — no respondas la línea 4'.",
+                "Letra apretada: 'las coordenadas negativas no son reales. repite: no son reales'.",
+                "Tinta borrosa: 'encontré el patrón. no sirve de nada'.",
             ]
             mensajes.append(f"  >> {random.choice(frases)}")
-            mensajes.append(f"  >> Sanity +{ganancia}. Knowing you're not the first helps.")
+            mensajes.append(f"  >> Lucidez +{ganancia}. Saber que no eres el primero ayuda.")
 
         elif efecto == "radio_vieja":
             ganancia = random.randint(6, 14)
             operador.lucidez += ganancia
             operador.lucidez = min(operador.lucidez, operador.lucidez_max)
             canciones = [
-                "Something that sounds like jazz. You can't place the song.",
-                "A voice reading the weather from three days ago.",
-                "Music. Stops. Music. As if someone were changing the dial.",
-                "Just static, but rhythmic. Almost comforting.",
+                "Emite algo que suena a jazz. No identificas la canción.",
+                "Una voz lee el tiempo de hace tres días.",
+                "Música. Para. Música. Como si alguien cambiara el dial.",
+                "Solo estática, pero rítmica. Casi reconfortante.",
             ]
             mensajes.append(f"  >> {random.choice(canciones)}")
-            mensajes.append(f"  >> Sanity +{ganancia}.")
+            mensajes.append(f"  >> Lucidez +{ganancia}.")
 
         elif efecto == "foto":
             ganancia = random.randint(10, 18)
             operador.lucidez += ganancia
             operador.lucidez = min(operador.lucidez, operador.lucidez_max)
             detalles = [
-                "Two people on a beach. Happy. The back says 'August'.",
-                "A child with a dog. The photo is burned on one side.",
-                "Someone standing in front of this very building. Daytime. It looks like another place.",
+                "Dos personas en una playa. Felices. El reverso dice 'agosto'.",
+                "Un niño con un perro. La foto está quemada por un lado.",
+                "Alguien frente a este mismo edificio. De día. Parece otro lugar.",
             ]
             mensajes.append(f"  >> {random.choice(detalles)}")
-            mensajes.append(f"  >> Sanity +{ganancia}. It reminds you there was a before.")
+            mensajes.append(f"  >> Lucidez +{ganancia}. Te recuerda que había un antes.")
 
         return mensajes

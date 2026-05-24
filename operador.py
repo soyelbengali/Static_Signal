@@ -24,7 +24,7 @@ class Operador:
         nx = self.x + dx
         ny = self.y + dy
         if not mundo.dentro_de_limites(nx, ny):
-            return False, "  >> Out of coverage. You cannot go beyond the operational limits."
+            return False, "  >> Fuera de cobertura. No puedes ir más allá de los límites operativos."
         self.x = nx
         self.y = ny
         self.turnos_restantes -= 1
@@ -37,12 +37,12 @@ class Operador:
     def estado_lucidez(self):
         pct = self.lucidez / self.lucidez_max
         if pct > 0.75:
-            return "STABLE"
+            return "ESTABLE"
         elif pct > 0.50:
-            return "ALERT"
+            return "ALERTA"
         elif pct > 0.25:
-            return "CRITICAL"
-        return "⚠ IMMINENT COLLAPSE"
+            return "CRÍTICO"
+        return "⚠ COLAPSO INMINENTE"
 
     def alucinando(self):
         return self.lucidez / self.lucidez_max < 0.20
