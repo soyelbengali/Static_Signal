@@ -106,10 +106,6 @@ def mostrar_informe(operador, config_inicial, veces_detectado=0):
         imprimir_lento("  signal lo", 0.08)
         time.sleep(0.4)
         print()
-        imprimir_lento("  don't hang up", 0.09)
-        imprimir_lento("  don't hang up", 0.09)
-        imprimir_lento("  don't look", 0.09)
-        imprimir_lento("  don't look back", 0.15)
 
     elif operador.resultado == "tiempo":
         print("  RESULT: SHIFT ABANDONED.")
