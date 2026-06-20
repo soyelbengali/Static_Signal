@@ -36,12 +36,12 @@ python main.py
 
 ```
 main.py       — Main loop and game logic
-mundo.py      — Map, sectors, monster and their effects
-operador.py   — Player character class
-eventos.py    — Random events
-mapa.py       — Visual radar and compass in terminal
-informe.py    — Final shift report
-sonido.py     — Sound module (Windows only)
+world.py      — Map, sectors, the signal, and their effects
+player.py     — Operator (player) class
+events.py     — Random events
+map.py        — Visual radar and compass in terminal
+report.py     — Final shift report
+sound.py      — Sound module (Windows only)
 README.md     — This file
 ```
 

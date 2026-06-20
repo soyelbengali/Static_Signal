@@ -2,85 +2,71 @@ import random
 import time
 import sys
 
-from mundo import Mundo, LIMITE_MIN, LIMITE_MAX, texto_roto_sector
-from operador import Operador
-from eventos import evento_aleatorio, aplicar_evento
-from informe import mostrar_informe, LINEA, pausar
-from mapa import dibujar_mapa, ROJO, NEGRITA, AMARILLO, GRIS, R
-import sonido
+from world import World, MAP_MIN, MAP_MAX, broken_sector_text
+from player import Operator
+from events import random_event, apply_event
+from report import show_report, SEPARATOR
+from map import draw_map, RED, BOLD, YELLOW, GRAY, RESET
+import sound
 
-MOVIMIENTOS = {
+DIRECTIONS = {
     "n":  ( 0,  1), "s":  ( 0, -1),
     "e":  ( 1,  0), "w":  (-1,  0),
     "ne": ( 1,  1), "nw": (-1,  1),
     "se": ( 1, -1), "sw": (-1, -1),
 }
 
-ALIAS_MOVIMIENTO = {
+DIRECTION_ALIASES = {
     "north": "n", "up":    "n",
     "south": "s", "down":  "s",
     "east":  "e", "right": "e",
     "west":  "w", "left":  "w",
 }
 
-NIVELES = {
-    "1": {"nombre": "easy",   "lucidez": 100, "turnos": 20, "prob_evento": 0.20},
-    "2": {"nombre": "normal", "lucidez":  80, "turnos": 30, "prob_evento": 0.35},
-    "3": {"nombre": "hard",   "lucidez":  60, "turnos": 40, "prob_evento": 0.50},
+DIFFICULTY_LEVELS = {
+    "1": {"name": "easy",   "sanity": 100, "turns": 20, "event_chance": 0.20},
+    "2": {"name": "normal", "sanity":  80, "turns": 30, "event_chance": 0.35},
+    "3": {"name": "hard",   "sanity":  60, "turns": 40, "event_chance": 0.50},
 }
 
-SONIDOS_EVENTO = {
-    "voz_repetida":           sonido.sonido_voz_repetida,
-    "llamada_propia":         sonido.sonido_numero_propio,
-    "unidad_perdida":         sonido.sonido_unidad_perdida,
-    "grabacion_propia":       sonido.sonido_grabacion,
-    "lucidez_repentina":      sonido.sonido_momento_claridad,
-    "cabina":                 sonido.sonido_unidad_perdida,
-    "llamada_saliente":       sonido.sonido_voz_repetida,
-    "señal_limpia":           sonido.sonido_señal_limpia,
-    "coordenadas_imposibles": sonido.sonido_coordenadas_imposibles,
-    "mensaje_pared":          sonido.sonido_transmision_fragmentada,
+EVENT_SOUNDS = {
+    "repeated_voice":           sound.sound_repeated_voice,
+    "own_number":               sound.sound_own_number,
+    "lost_unit":                sound.sound_lost_unit,
+    "own_recording":            sound.sound_recording,
+    "sudden_clarity":           sound.sound_moment_of_clarity,
+    "phone_booth":              sound.sound_lost_unit,
+    "outgoing_call":            sound.sound_repeated_voice,
+    "clean_signal":             sound.sound_clean_signal,
+    "impossible_coordinates":   sound.sound_impossible_coordinates,
+    "fragmented_transmission":  sound.sound_fragmented_transmission,
 }
 
 
-def pausa(t=0.3):
-    time.sleep(t)
+def pause(seconds=0.3):
+    time.sleep(seconds)
 
 
-def pedir_entero(pregunta, minimo, maximo, defecto=None):
-    while True:
-        entrada = input(pregunta).strip()
-        if entrada == "" and defecto is not None:
-            return defecto
-        try:
-            valor = int(entrada)
-            if minimo <= valor <= maximo:
-                return valor
-            print(f"  Enter a number between {minimo} and {maximo}.")
-        except ValueError:
-            print("  Invalid value.")
+def prompt_name(question, default="Operator"):
+    entry = input(question).strip()
+    return entry if entry else default
 
 
-def pedir_nombre(pregunta, defecto="Operator"):
-    entrada = input(pregunta).strip()
-    return entrada if entrada else defecto
-
-
-def pantalla_inicio():
+def show_intro():
     print()
-    print(LINEA)
+    print(SEPARATOR)
     print()
-    pausa(0.2)
+    pause(0.2)
     print("  STATIC SIGNAL")
-    pausa(0.1)
-    frecuencia = round(random.uniform(150.0, 160.0), 1)
-    print(f"  Night shift. Frequency {frecuencia} MHz.")
-    pausa(0.1)
+    pause(0.1)
+    frequency = round(random.uniform(150.0, 160.0), 1)
+    print(f"  Night shift. Frequency {frequency} MHz.")
+    pause(0.1)
     print("  You are the only one listening.")
     print()
-    pausa(0.3)
-    print(LINEA)
-    pausa(0.4)
+    pause(0.3)
+    print(SEPARATOR)
+    pause(0.4)
     print()
     print("  You have been working the night shift for three years.")
     print("  You know the difference between a drunk and a real emergency.")
@@ -88,206 +74,243 @@ def pantalla_inicio():
     print()
     print("  Tonight something is different.")
     print()
-    pausa(0.5)
-    print(LINEA)
+    pause(0.5)
+    print(SEPARATOR)
     print()
 
 
-def configurar_turno():
+def configure_shift():
     print("  SHIFT CONFIGURATION")
     print()
-    nombre_operador = pedir_nombre("  Operator name (Enter = 'Operator'): ")
+    operator_name = prompt_name("  Operator name (Enter = 'Operator'): ")
     print()
     print("  Difficulty:")
-    for clave, nivel in NIVELES.items():
-        print(f"    {clave}. {nivel['nombre']:8} — sanity {nivel['lucidez']}, turns {nivel['turnos']}")
-    eleccion = input("  Choose (1/2/3, Enter = 2): ").strip()
-    if eleccion not in NIVELES:
-        eleccion = "2"
-    nivel_elegido = NIVELES[eleccion]
+    for key, level in DIFFICULTY_LEVELS.items():
+        print(f"    {key}. {level['name']:8} — sanity {level['sanity']}, turns {level['turns']}")
+    choice = input("  Choose (1/2/3, Enter = 2): ").strip()
+    if choice not in DIFFICULTY_LEVELS:
+        choice = "2"
+    chosen_level = DIFFICULTY_LEVELS[choice]
     print()
-    print(LINEA)
+    print(SEPARATOR)
     print()
-    print(f"  Operator        : {nombre_operador}")
+    print(f"  Operator         : {operator_name}")
     print(f"  Starting position: X=0, Y=0")
-    print(f"  Sanity          : {nivel_elegido['lucidez']}")
-    print(f"  Target turns    : {nivel_elegido['turnos']}")
-    print(f"  Difficulty      : {nivel_elegido['nombre']}")
+    print(f"  Sanity           : {chosen_level['sanity']}")
+    print(f"  Target turns     : {chosen_level['turns']}")
+    print(f"  Difficulty       : {chosen_level['name']}")
     print()
-    print(f"  Operational area: X=[{LIMITE_MIN},{LIMITE_MAX}]  Y=[{LIMITE_MIN},{LIMITE_MAX}]")
+    print(f"  Operational area : X=[{MAP_MIN},{MAP_MAX}]  Y=[{MAP_MIN},{MAP_MAX}]")
     print("  Victory  : survive all turns")
     print("  Defeat   : sanity=0 / captured / abandon")
     print()
-    print(LINEA)
+    print(SEPARATOR)
     print()
-    return nombre_operador, nivel_elegido
+    return operator_name, chosen_level
 
 
-def mostrar_turno(operador, mundo, numero_turno, turnos_totales):
-    print(f"\n  — TURN {numero_turno}/{turnos_totales}   {operador.hora_actual()} —")
-    dibujar_mapa(operador, mundo)
-    print(f"  Mental state     : [{operador.estado_lucidez()}]")
-    print(f"  Turns remaining  : {operador.turnos_restantes}")
+def show_turn_header(operator, world, turn_number, total_turns):
+    print(f"\n  — TURN {turn_number}/{total_turns}   {operator.current_time()} —")
+    draw_map(operator, world)
+    print(f"  Mental state     : [{operator.sanity_status()}]")
+    print(f"  Turns remaining  : {operator.turns_remaining}")
 
 
-def pedir_direccion():
+def prompt_direction():
     print()
     print("  Directions: n / s / e / w / ne / nw / se / sw")
     print("  (type 'quit' to abandon the shift)")
     while True:
-        entrada = input("  > ").strip().lower()
-        if entrada == "quit":
+        entry = input("  > ").strip().lower()
+        if entry == "quit":
             return None
-        entrada = ALIAS_MOVIMIENTO.get(entrada, entrada)
-        if entrada in MOVIMIENTOS:
-            return entrada
+        entry = DIRECTION_ALIASES.get(entry, entry)
+        if entry in DIRECTIONS:
+            return entry
         print("  Direction not recognized.")
 
 
-def simular_turno(operador, mundo, nivel):
-    turnos_totales = nivel["turnos"]
-    prob_evento = nivel["prob_evento"]
-    config_inicial = {
-        "x": operador.x, "y": operador.y,
-        "lucidez": operador.lucidez_max,
-        "turnos": operador.turnos_restantes,
+def handle_sector_entry(operator, sector):
+    if sector.visited:
+        return
+    sector.visited = True
+    operator.sectors_visited.append((operator.x, operator.y, sector.visible_type()))
+    sound.sound_sector(sector.type)
+
+
+def print_sector_description(operator, sector):
+    sector_type = sector.visible_type()
+    print(f"  Sector  : {sector_type.upper()} — {sector.description()}")
+    if operator.is_hallucinating():
+        print(broken_sector_text(sector_type))
+
+
+def apply_sector_effects(operator, world, sector):
+    effects = world.apply_effect(sector, operator)
+    for line in effects:
+        print(line)
+        pause(0.04)
+
+
+def handle_signal_detection(signal, operator, sector):
+    previous_phase = signal.phase
+    detected, reason = signal.check_detection(operator, sector.type)
+    if detected and signal.phase == "patrol":
+        signal.start_pursuit()
+        sound.sound_detection()
+        print(f"\n  {RED}{BOLD}⚠  SIGNAL DETECTED — {reason.upper()}{RESET}")
+        print(f"  {RED}Something is coming for you.{RESET}")
+        pause(0.2)
+    signal.move(operator.x, operator.y)
+    if signal.phase != previous_phase:
+        _print_phase_change(signal.phase)
+
+
+def _print_phase_change(new_phase):
+    if new_phase == "retreat":
+        print(f"\n  {YELLOW}  The signal loses your trail. It retreats.{RESET}")
+        sound.resume_static()
+    elif new_phase == "patrol":
+        print(f"\n  {GRAY}  Silence. The signal goes back to wandering.{RESET}")
+
+
+def handle_signal_collision(operator, signal):
+    if not signal.collision(operator.x, operator.y):
+        return False
+    sound.pause_static()
+    sound.sound_death()
+    print()
+    print(f"  {RED}{BOLD}THE SIGNAL HAS FOUND YOU.{RESET}")
+    print()
+    operator.outcome = "captured"
+    operator.end_reason = "Captured by hostile entity"
+    return True
+
+
+def handle_random_event(operator, event_chance):
+    event = random_event(event_chance)
+    if not event:
+        return
+    sound_fn = EVENT_SOUNDS.get(event["id"])
+    if sound_fn:
+        sound_fn()
+    event_messages = apply_event(event, operator)
+    for line in event_messages:
+        print(line)
+        pause(0.04)
+
+
+def handle_movement(operator, world):
+    direction = prompt_direction()
+    if direction is None:
+        operator.outcome = "abandoned"
+        operator.end_reason = "Operator abandoned the shift"
+        return
+
+    dx, dy = DIRECTIONS[direction]
+    previous_pos = (operator.x, operator.y)
+    moved, error_message = operator.move(dx, dy, world)
+
+    if not moved:
+        print(f"\n{error_message}")
+        operator.turns_remaining -= 1
+        operator.turns_completed += 1
+    else:
+        print(f"\n  Move: {direction.upper()}"
+              f"  |  ({previous_pos[0]},{previous_pos[1]}) → ({operator.x},{operator.y})")
+
+    pause(0.1)
+
+
+def resolve_end_state(operator):
+    if operator.sanity <= 0:
+        operator.end_reason = "Sanity depleted — operator collapse"
+        operator.outcome = "collapse"
+        sound.pause_static()
+        sound.sound_death()
+    else:
+        operator.end_reason = "Operational time exhausted"
+        operator.outcome = "abandoned"
+
+
+def run_shift(operator, world, level):
+    total_turns = level["turns"]
+    event_chance = level["event_chance"]
+    initial_config = {
+        "x": operator.x, "y": operator.y,
+        "sanity": operator.sanity_max,
+        "turns": operator.turns_remaining,
     }
 
-    numero_turno = 0
+    turn_number = 0
 
-    while operador.esta_vivo():
-        numero_turno += 1
+    while operator.is_alive():
+        turn_number += 1
 
-        if numero_turno > turnos_totales:
-            operador.resultado = "victoria"
-            operador.causa_fin = "Survival completed"
-            sonido.sonido_victoria()
+        if turn_number > total_turns:
+            operator.outcome = "victory"
+            operator.end_reason = "Survival completed"
+            sound.sound_victory()
             break
 
-        mostrar_turno(operador, mundo, numero_turno, turnos_totales)
-        operador.avanzar_hora(7)
+        show_turn_header(operator, world, turn_number, total_turns)
+        operator.advance_time(7)
 
-        zona_actual = mundo.obtener_sector(operador.x, operador.y)
-        if not zona_actual.visitado:
-            zona_actual.visitado = True
-            operador.sectores_visitados.append((operador.x, operador.y, zona_actual.tipo_visible()))
-            sonido.sonido_sector(zona_actual.tipo)
+        sector = world.get_sector(operator.x, operator.y)
+        handle_sector_entry(operator, sector)
+        print_sector_description(operator, sector)
+        apply_sector_effects(operator, world, sector)
 
-        tipo_zona = zona_actual.tipo_visible()
-        print(f"  Sector  : {tipo_zona.upper()} — {zona_actual.descripcion()}")
-
-        if operador.alucinando():
-            print(texto_roto_sector(tipo_zona))
-
-        efectos = mundo.aplicar_efecto(zona_actual, operador)
-        for linea in efectos:
-            print(linea)
-            pausa(0.04)
-
-        if not operador.esta_vivo():
+        if not operator.is_alive():
             break
 
-        señal = mundo.monstruo
-        fase_anterior = señal.fase
+        signal = world.signal
+        handle_signal_detection(signal, operator, sector)
 
-        detectado, motivo = señal.comprobar_deteccion(operador, zona_actual.tipo)
-        if detectado and señal.fase == "patrulla":
-            señal.iniciar_persecucion()
-            sonido.sonido_deteccion()
-            print(f"\n  {ROJO}{NEGRITA}⚠  SIGNAL DETECTED — {motivo.upper()}{R}")
-            print(f"  {ROJO}Something is coming for you.{R}")
-            pausa(0.2)
-
-        señal.mover(operador.x, operador.y)
-
-        if señal.fase != fase_anterior:
-            if señal.fase == "retirada":
-                print(f"\n  {AMARILLO}  The signal loses your trail. It retreats.{R}")
-                sonido.reanudar_estatico()
-            elif señal.fase == "patrulla":
-                print(f"\n  {GRIS}  Silence. The signal goes back to wandering.{R}")
-
-        if señal.colision(operador.x, operador.y):
-            sonido.pausar_estatico()
-            sonido.sonido_muerte()
-            print()
-            print(f"  {ROJO}{NEGRITA}THE SIGNAL HAS FOUND YOU.{R}")
-            print()
-            operador.resultado = "muerte"
-            operador.causa_fin = "Captured by hostile entity"
+        if handle_signal_collision(operator, signal):
             break
 
-        incidente = evento_aleatorio(prob_evento)
-        if incidente:
-            fn_sonido = SONIDOS_EVENTO.get(incidente["id"])
-            if fn_sonido:
-                fn_sonido()
-            mensajes_incidente = aplicar_evento(incidente, operador)
-            for linea in mensajes_incidente:
-                print(linea)
-                pausa(0.04)
+        handle_random_event(operator, event_chance)
 
-        if not operador.esta_vivo():
+        if not operator.is_alive():
             break
 
-        direccion = pedir_direccion()
-        if direccion is None:
-            operador.resultado = "tiempo"
-            operador.causa_fin = "Operator abandoned the shift"
+        handle_movement(operator, world)
+
+        if operator.outcome is not None:
             break
 
-        dx, dy = MOVIMIENTOS[direccion]
-        pos_anterior = (operador.x, operador.y)
-        movio, mensaje_error = operador.mover(dx, dy, mundo)
+    if operator.outcome is None:
+        resolve_end_state(operator)
 
-        if not movio:
-            print(f"\n{mensaje_error}")
-            operador.turnos_restantes -= 1
-            operador.turnos_superados += 1
-        else:
-            print(f"\n  Move: {direccion.upper()}"
-                  f"  |  ({pos_anterior[0]},{pos_anterior[1]}) → ({operador.x},{operador.y})")
-
-        pausa(0.1)
-
-    if operador.resultado is None:
-        if operador.lucidez <= 0:
-            operador.causa_fin = "Sanity depleted — operator collapse"
-            operador.resultado = "locura"
-            sonido.pausar_estatico()
-            sonido.sonido_muerte()
-        else:
-            operador.causa_fin = "Operational time exhausted"
-            operador.resultado = "tiempo"
-
-    mostrar_informe(operador, config_inicial, mundo.monstruo.veces_detectado)
-    sonido.pausar_estatico()
+    show_report(operator, initial_config, world.signal.times_detected)
+    sound.pause_static()
 
 
-def jugar():
-    pantalla_inicio()
-    sonido.iniciar_estatico()
-    nombre_operador, nivel = configurar_turno()
+def play():
+    show_intro()
+    sound.start_static()
+    operator_name, level = configure_shift()
 
-    mundo = Mundo()
-    operador = Operador(
-        nombre=nombre_operador, x=0, y=0,
-        lucidez=nivel["lucidez"],
-        turnos_max=nivel["turnos"],
+    world = World()
+    operator = Operator(
+        name=operator_name, x=0, y=0,
+        sanity=level["sanity"],
+        turns_max=level["turns"],
     )
 
     print("  Starting shift...")
-    pausa(0.8)
+    pause(0.8)
     print()
-    simular_turno(operador, mundo, nivel)
+    run_shift(operator, world, level)
 
 
 def main():
     while True:
-        jugar()
+        play()
         print()
-        respuesta = input("  Start a new shift? (y/n): ").strip().lower()
-        if respuesta not in ("y", "yes", "s", "si", "sí"):
+        answer = input("  Start a new shift? (y/n): ").strip().lower()
+        if answer not in ("y", "yes", "s", "si", "sí"):
             print()
             print("  Closing session.")
             print()
